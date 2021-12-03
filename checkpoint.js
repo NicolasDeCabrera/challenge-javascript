@@ -33,7 +33,9 @@ const {
 // < 16
 
 function exponencial(exp) {
-
+    return function(num){
+        return Math.pow(num,exp);
+    }
 }
 
 // ----- Recursión -----
@@ -44,7 +46,8 @@ function exponencial(exp) {
 // que se deben realizar, para llegar al destino de un laberinto dado.
 //
 // Ejemplo: dado el siguiente laberinto:
-// let laberintoExample = { // direccion = ""
+// let laberintoExample = 
+//   { // direccion = ""
 //     N: 'pared',
 //     S: { // direccion = "S"
 //         N: 'pared',
@@ -69,8 +72,49 @@ function exponencial(exp) {
 // haciendo los movimientos SUR->ESTE->NORTE
 // Aclaraciones: el segundo parametro que recibe la funcion ('direccion') puede ser pasado vacio (null)
 
-function direcciones(laberinto) {
+function direcciones(laberinto,direccion="") {
+   
+    if (laberinto === undefined) {return ""}
+    if(typeof laberinto.N === "object"){
+        direccion+="N";
+        return direcciones(laberinto.N,direccion);
+    }
+    else if(typeof laberinto.S === "object"){
+        direccion+="S";
+        return direcciones(laberinto.S,direccion);
+    }
+    else if(typeof laberinto.E === "object"){
+        direccion+="E";
+        return direcciones(laberinto.E,direccion);
+    }
+    else if(typeof laberinto.O === "object"){
+        direccion+="O";
+        return direcciones(laberinto.O,direccion);
+    }
+    else{
+        if(laberinto.N === "destino"){
+            direccion+="N";
+            return direccion;
 
+        }
+        else if(laberinto.S === "destino"){
+            direccion+="S";
+            return direccion;
+
+        }
+        else if(laberinto.E === "destino"){
+            direccion+="E";
+            return direccion;
+
+        }
+        else if(laberinto.O === "destino"){
+            direccion+="O";
+            return direccion;
+
+        }
+        
+        return "";
+    }
 }
 
 
@@ -88,7 +132,12 @@ function direcciones(laberinto) {
 // deepEqualArrays([0,1,[[0,1,2],1,2]], [0,1,[[0,1,2],1,2]]) => true
 
 function deepEqualArrays(arr1, arr2) {
-
+    if (typeof arr1[1] === typeof arr2[1]) {
+        if (arr1.join(",") === arr2.join(",")) {
+            return true;
+        }
+    }
+   return false;
 }
 
 
@@ -139,7 +188,56 @@ OrderedLinkedList.prototype.print = function(){
 // < 'head --> 5 --> 3 --> 1 --> null'
 //               4
 OrderedLinkedList.prototype.add = function(val){
+    let nodo = new Node(val)
     
+    if(this.head===null){
+        this.head=nodo;
+        return this.head;
+    }
+    else{
+        // let aux=this.head;
+        // this.head=nodo
+        // this.head.next=aux;
+        // console.log(this.head);
+
+        if (this.head.next === null) {
+            if (this.head.value > val) {
+                
+                let aux=this.head;
+                this.next=nodo;
+                this.head.next=aux;
+            }
+            else{
+                this.head.next=nodo;
+            }
+            return this.head.next;
+        }  
+        //-----------------
+        let current=this.head;
+        let anterior=this.head;
+
+        while(current){
+            
+            //5---> 4 ---> 2
+            //6          
+            if ( current.value > val) {
+                let aux=current;
+                anterior=nodo;
+                anterior.next=aux;
+                return anterior;
+            }
+            else{
+                let aux=current;
+                current=nodo;
+                current.next=aux;
+                return current
+            }
+            anterior=current;    
+            current=current.next;
+            
+            
+        }
+    }
 }
 
 
@@ -159,7 +257,13 @@ OrderedLinkedList.prototype.add = function(val){
 // < null
 
 OrderedLinkedList.prototype.removeHigher = function(){
+    if(this.head===null){return this.head}
     
+        let nodoSiguiente=this.head.next;
+        let aux=this.head.value;
+        this.head=null;
+        this.head=nodoSiguiente;
+        return aux;
 }
 
 
@@ -179,7 +283,19 @@ OrderedLinkedList.prototype.removeHigher = function(){
 // < null
 
 OrderedLinkedList.prototype.removeLower = function(){
-    
+    if(this.head === null){return null;}
+    if(this.head.next === null){
+        let aux=this.value;
+        this.head=null;
+        return aux;
+    }
+    let current=this.head;
+    while (current.next.next) {
+        current=current.next;
+    }
+    let aux= current.value
+    current=null;
+    return aux;
 }
 
 
@@ -212,10 +328,50 @@ OrderedLinkedList.prototype.removeLower = function(){
 // < ["2-1", "1-1", "1-2", "2-2"];
 
 function multiCallbacks(cbs1, cbs2){
-    
+    let orden=[];
+    let result=[];
+    let ordenada1=deMenorAmayor(cbs1);
+    let ordenada2=deMenorAmayor(cbs2);
+
+    if (ordenada1[0] < ordenada2[0]) {
+        result=[ordenada1,ordenada2]
+    }
+    else{
+        result=[ordenada2,ordenada1]
+    }
+
+    for (let i = 0; i < result.length; i++) {
+        result[i].cb();
+    }
+    return result;
+}   
+
+// function deMenorAmayor(arrFun){
+//     if (arrFun[0].time < arrFun[1].time) {
+//         // return [arrFun[0],arrFun[1]];
+//         return [0,1]
+//     }
+//     // return [arrFun[1],arrFun[0]];
+//     return [1,0]
+// }
+
+function deMenorAmayor(arr1,arr2){
+    let array=arr1.concat(arr2);
+    let result=[];
+    let aux;
+    for (let i = 0; i < arr1.length; i++) {
+        for (let j = i+1; j < arr2.length; j++) {
+            if (array[i].time < array[j].time) {
+               aux=i;
+            }
+            else{
+                aux=j;
+            }
+        }
+        result.push(aux);
+    }
+    return result;
 }
-
-
 
 // ----- BST -----
 
@@ -230,8 +386,12 @@ function multiCallbacks(cbs1, cbs2){
 // 5   9
 // resultado:[5,8,9,32,64]
 
-BinarySearchTree.prototype.toArray = function() {
-    
+BinarySearchTree.prototype.toArray = function(arr=[]) {
+    if(this.left !== null){arr.push(this.left.depthFirstForEach(arr))}
+    arr.push(this.value);
+    if(this.right !== null){arr.push(this.right.depthFirstForEach(arr))}
+    console.log(arr);
+    return arr;
 }
 
 
@@ -250,7 +410,15 @@ BinarySearchTree.prototype.toArray = function() {
 // informarse sobre algoritmos, leerlos de un pseudocodigo e implemnterlos alcanzara
 
 function primalityTest(n) {
-    
+    if (n <= 3) return n > 1;
+    if ((n % 2 === 0) || (n % 3 === 0)) return false;
+    let count = 5;
+    while (Math.pow(count, 2) <= n) {
+        if (n % count === 0 || n % (count + 2) === 0) return false;
+          
+        count += 6;
+    }
+        return true;
 }
 
 
@@ -260,7 +428,19 @@ function primalityTest(n) {
 // https://en.wikipedia.org/wiki/Quicksort
 
 function quickSort(array) {
-    
+    if(array.length <= 1){return array};
+    const izq=[];
+    const pivote=array.shift();
+    const der=[];
+    for (const i of array) {
+      if(i > pivote){
+        izq.push(i);
+      }
+      else{
+        der.push(i);        
+      }
+    }   
+  return quickSort(izq).concat(pivote , quickSort(der));
 }
 // QuickSort ya lo conocen solo que este 
 // ordena de mayor a menor
